@@ -15,10 +15,10 @@ public class ProductRepositoryImpl implements ProductRepository {
     private EntityManager entityManager;
 
     @Override
-    public Product save(Product product) {
+    public String save(Product product) {
         if (product.getId() == null) {
             entityManager.persist(product);
-            return product;
+            return "User saved succesfully!";
         }
         return null;
     }

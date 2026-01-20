@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository;
 
 
 public interface  ProductRepository {
-    Product save(Product product);
+    String save(Product product);
 }
