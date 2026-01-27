@@ -16,10 +16,7 @@ public class ProductRepositoryImpl implements ProductRepository {
 
     @Override
     public String save(Product product) {
-        if (product.getId() == null) {
-            entityManager.persist(product);
-            return "User saved succesfully!";
-        }
-        return null;
+        entityManager.persist(product);
+        return "Product saved succesfully!";
     }
 }

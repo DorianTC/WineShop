@@ -1,4 +1,7 @@
 package com.wineshop.demo.domain.repository;
 
-public class CategoryRepository {
+import com.wineshop.demo.domain.entity.Category;
+
+public interface CategoryRepository {
+    Category getCategory(Long id);
 }
