@@ -19,4 +19,21 @@ public class ProductRepositoryImpl implements ProductRepository {
         entityManager.persist(product);
         return "Product saved succesfully!";
     }
+
+    @Override
+    public String delete(Product product) {
+        entityManager.remove(product);
+        return "Product deleted succesfully!";
+    }
+
+    @Override
+    public Product findById(Long id) {
+        return entityManager.find(Product.class, id);
+    }
+
+   @Override
+    public String update(Product product) {
+        entityManager.merge(product);
+        return "Product updated succesfully!";
+    }
 }
