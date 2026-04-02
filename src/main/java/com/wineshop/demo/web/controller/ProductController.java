@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/products")
 @RequiredArgsConstructor
@@ -23,7 +25,7 @@ public class ProductController {
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(message);
     }
-    @DeleteMapping("/{id}")  // ← endpoint DELETE
+    @DeleteMapping("/delete/{id}")  // ← endpoint DELETE
     public ResponseEntity<String> delete(@PathVariable Long id) {
         String message = productService.delete(id);
 
@@ -33,13 +35,29 @@ public class ProductController {
 
         return ResponseEntity.ok(message);
     }
-    @PatchMapping("/update")
-    public ResponseEntity<String> update(@RequestBody ProductDTO dto) {
-        String message = productService.update(dto);
-        if (message == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Product could not be updated" +
-                    " because invalid data was provided.");
+    @PatchMapping("/{id}")
+    public ResponseEntity<String> update(
+            @PathVariable Long id,
+            @RequestBody ProductDTO dto) {
+
+        String message = productService.update(id, dto);
+
+        if (message.equals("Product not found") || message.equals("Category not found")) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
         }
-        return ResponseEntity.status(HttpStatus.OK).body(message);
+
+        return ResponseEntity.ok(message);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<ProductDTO>> getAll() {
+        List<ProductDTO> products = productService.getAll();
+        return ResponseEntity.ok(products);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ProductDTO> getById(@PathVariable Long id) {
+        ProductDTO product = productService.getById(id);
+        return ResponseEntity.ok(product);
     }
 }

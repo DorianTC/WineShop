@@ -7,6 +7,8 @@ import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Repository
 @Transactional
 public class ProductRepositoryImpl implements ProductRepository {
@@ -35,5 +37,11 @@ public class ProductRepositoryImpl implements ProductRepository {
     public String update(Product product) {
         entityManager.merge(product);
         return "Product updated succesfully!";
+    }
+    @Override
+    public List<Product> getAll() {
+        return entityManager
+                .createQuery("SELECT p FROM Product p", Product.class)
+                .getResultList();
     }
 }
