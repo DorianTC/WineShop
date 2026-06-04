@@ -4,6 +4,10 @@ import com.wineshop.demo.business.exception.messages.ExceptionMessages;
 import com.wineshop.demo.web.dto.CategoryDTO;
 import com.wineshop.demo.business.service.CategoryService;
 
+import com.wineshop.demo.web.dto.MessageResponse;
+import com.wineshop.demo.web.dto.ProductDTO;
+import com.wineshop.demo.web.dto.response.CategoryResponse;
+import com.wineshop.demo.web.dto.response.ProductResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,40 +23,27 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @PostMapping
-    public ResponseEntity<String> create(@RequestBody CategoryDTO dto) {
-        String message = categoryService.save(dto);
-        if (message.equals(ExceptionMessages.CATEGORY_ALREADY_EXIST)) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message);
-        }
-        return ResponseEntity.status(HttpStatus.CREATED).body(message);
+    public ResponseEntity<CategoryResponse> create(@RequestBody CategoryDTO dto) {
+        CategoryResponse response = categoryService.save(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PatchMapping("/update")
-    public ResponseEntity<String> update(
+    @PatchMapping("/{id}")
+    public ResponseEntity<CategoryResponse> update(
+            @PathVariable Long id,
             @RequestBody CategoryDTO dto) {
 
-        String message = categoryService.update(dto);
-
-        if (message.equals(ExceptionMessages.EMAIL_ADDRESS_NOT_FOUND)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
-        }
-
-        return ResponseEntity.ok(message);
+        CategoryResponse response = categoryService.update(id ,dto);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
-        String message = categoryService.delete(id);
-
-        if (message.equals(ExceptionMessages.CATEGORY_NOT_FOUND)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
+    public ResponseEntity<MessageResponse> delete(@PathVariable Long id) {
+        return ResponseEntity.status(HttpStatus.OK).body(categoryService.delete(id));
         }
-
-        return ResponseEntity.ok(message);
-    }
     @GetMapping
-    public ResponseEntity<List<CategoryDTO>> getAll() {
-        List<CategoryDTO> categories = categoryService.getAll();
+    public ResponseEntity<List<CategoryResponse>> getAll() {
+        List<CategoryResponse> categories = categoryService.getAll();
         return ResponseEntity.ok(categories);
     }
 }

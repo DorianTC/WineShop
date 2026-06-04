@@ -44,4 +44,13 @@ public class ProductRepositoryImpl implements ProductRepository {
                 .createQuery("SELECT p FROM Product p", Product.class)
                 .getResultList();
     }
+    @Override
+    public Product findByName(String name) {
+        return entityManager.createQuery(
+                        "SELECT p FROM Product p WHERE p.name = :name", Product.class)
+                .setParameter("name", name)
+                .getResultStream()
+                .findFirst()
+                .orElse(null);
+    }
 }

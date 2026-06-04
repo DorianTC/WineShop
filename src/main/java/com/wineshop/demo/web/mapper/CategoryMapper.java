@@ -1,6 +1,7 @@
 package com.wineshop.demo.web.mapper;
 import com.wineshop.demo.domain.entity.Category;
 import com.wineshop.demo.web.dto.CategoryDTO;
+import com.wineshop.demo.web.dto.response.CategoryResponse;
 import org.springframework.stereotype.Component;
 
 
@@ -20,6 +21,13 @@ public class CategoryMapper {
                 .name(category.getName())
                 .description(category.getDescription())
                 .build();
+    }
+    public CategoryResponse toResponse(Category category){
+        CategoryResponse categoryResponse = new CategoryResponse();
+        categoryResponse.setId(category.getId());
+        categoryResponse.setName(category.getName());
+        categoryResponse.setDescription(category.getDescription());
+        return categoryResponse;
     }
 
 }

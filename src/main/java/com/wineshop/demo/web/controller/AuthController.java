@@ -5,6 +5,7 @@ import com.wineshop.demo.business.exception.UserAlreadyExistsException;
 import com.wineshop.demo.business.service.UserService;
 import com.wineshop.demo.web.dto.request.RegisterUserRequest;
 import com.wineshop.demo.web.dto.response.UserResponse;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -20,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
     private final UserService userService;
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody RegisterUserRequest request) {
+    public ResponseEntity<?> create(@Valid @RequestBody RegisterUserRequest request) {
         try {
             UserResponse response = userService.save(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);  // 201 + UserResponse
@@ -32,7 +33,7 @@ public class AuthController {
     }
 
     @PostMapping ("/login")
-    public ResponseEntity<?> login(@RequestBody RegisterUserRequest request) {
+    public ResponseEntity<?> login(@Valid @RequestBody RegisterUserRequest request) {
         try {
             UserResponse response =userService.login(request);
             return ResponseEntity.status(HttpStatus.OK).body(response);

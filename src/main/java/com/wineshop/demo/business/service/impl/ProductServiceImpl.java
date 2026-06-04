@@ -1,11 +1,16 @@
 package com.wineshop.demo.business.service.impl;
 
+import com.wineshop.demo.business.exception.ProductAlreadyExistsException;
+import com.wineshop.demo.business.exception.ProductNotFoundException;
+import com.wineshop.demo.business.exception.messages.ExceptionMessages;
 import com.wineshop.demo.business.service.ProductService;
 import com.wineshop.demo.domain.entity.Category;
 import com.wineshop.demo.domain.entity.Product;
 import com.wineshop.demo.domain.repository.CategoryRepository;
 import com.wineshop.demo.domain.repository.ProductRepository;
+import com.wineshop.demo.web.dto.MessageResponse;
 import com.wineshop.demo.web.dto.ProductDTO;
+import com.wineshop.demo.web.dto.response.ProductResponse;
 import com.wineshop.demo.web.mapper.ProductMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,40 +18,59 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.wineshop.demo.business.exception.messages.ExceptionMessages.*;
+
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final ProductMapper productMapper;
+
     @Override
-    public String save(ProductDTO productDTO) {
-        Category category = categoryRepository.getCategory(1L);
+    public ProductResponse save(ProductDTO productDTO) {
+        Category category = categoryRepository.getCategory(productDTO.getCategoryId());
         if (category == null) {
-            return "Product category does not exists!";
+            throw new RuntimeException(CATEGORY_NOT_FOUND);
         }
+
+        Product existingProduct = productRepository.findByName(productDTO.getName());
+        if (existingProduct != null) {
+            throw new ProductAlreadyExistsException();
+        }
+
         Product product = productMapper.toEntity(productDTO, category);
-        if (product.getId() == null) {
-            return productRepository.save(product);
-        }
-        return "Product already exists!";
+        productRepository.save(product);
+        ProductResponse productResponse = new ProductResponse();
+        productResponse.setCategoryName(product.getCategory().getName());
+        return productMapper.toResponse(product);
     }
-    public String delete(Long id) {
+
+    @Override
+    public MessageResponse delete(Long id) {
         Product product = productRepository.findById(id);
         if (product == null) {
-            return "Product not found";
+            throw new ProductNotFoundException();
         }
-        if (product != null) {
-            return productRepository.delete(product);
-        }
-        return null;
+
+        productRepository.delete(product);
+        MessageResponse messageResponse = new MessageResponse(PRODUCT_DELETED_SUCCESSFULLY);
+        return messageResponse;
     }
-    public String update(Long id, ProductDTO productDTO) {
+
+    @Override
+    public ProductResponse update(Long id, ProductDTO productDTO) {
         Product existingProduct = productRepository.findById(id);
 
         if (existingProduct == null) {
-            return "Product not found";
+            throw new ProductNotFoundException();
         }
+
+        Product productWithSameName = productRepository.findByName(productDTO.getName());
+        if (productWithSameName != null && !productWithSameName.getId().equals(id)) {
+            throw new ProductAlreadyExistsException();
+        }
+
         existingProduct.setName(productDTO.getName());
         existingProduct.setPrice(productDTO.getPrice());
         existingProduct.setDescription(productDTO.getDescription());
@@ -60,19 +84,18 @@ public class ProductServiceImpl implements ProductService {
         if (productDTO.getCategoryId() != null) {
             Category category = categoryRepository.getCategory(productDTO.getCategoryId());
             if (category == null) {
-                return "Category not found";
+                throw new RuntimeException(CATEGORY_NOT_FOUND);
             }
             existingProduct.setCategory(category);
         }
-        productRepository.update(existingProduct);
-
-        return "Product updated successfully!";
+        return productMapper.toResponse(existingProduct);
     }
+
     @Override
     public List<ProductDTO> getAll() {
         return productRepository.getAll()
                 .stream()
-                .map(product -> productMapper.toDTO(product))
+                .map(productMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
@@ -80,7 +103,7 @@ public class ProductServiceImpl implements ProductService {
     public ProductDTO getById(Long id) {
         Product product = productRepository.findById(id);
         if (product == null) {
-            return null;
+            throw new ProductNotFoundException();
         }
         return productMapper.toDTO(product);
     }

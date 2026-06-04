@@ -3,6 +3,7 @@ package com.wineshop.demo.web.mapper;
 import com.wineshop.demo.domain.entity.Category;
 import com.wineshop.demo.domain.entity.Product;
 import com.wineshop.demo.web.dto.ProductDTO;
+import com.wineshop.demo.web.dto.response.ProductResponse;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -20,6 +21,15 @@ public class ProductMapper {
         product.setRegion(dto.getRegion());
         product.setYear(dto.getYear());
         return product;
+    }
+    public ProductResponse toResponse(Product product) {
+        ProductResponse productResponse = new ProductResponse();
+        productResponse.setId(product.getId());
+        productResponse.setName(product.getName());
+        productResponse.setDescription(product.getDescription());
+        productResponse.setCategoryName(product.getCategory().getName());
+        productResponse.setCategoryId(product.getCategory().getId());
+        return  productResponse;
     }
 
     public ProductDTO toDTO(Product product) {

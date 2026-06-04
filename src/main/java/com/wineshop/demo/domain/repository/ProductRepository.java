@@ -11,4 +11,5 @@ public interface  ProductRepository {
     Product findById(Long id);
     String update(Product product);
     List<Product> getAll();
+    Product findByName(String name);
 }

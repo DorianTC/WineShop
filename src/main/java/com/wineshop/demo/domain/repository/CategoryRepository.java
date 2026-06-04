@@ -12,6 +12,5 @@ public interface CategoryRepository {
     Category delete(Category category);
     Category findByName(String name);
     List<Category> getAll();
-
-
+    Category findById(Long id);
 }

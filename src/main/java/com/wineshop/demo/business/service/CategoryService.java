@@ -1,12 +1,14 @@
 package com.wineshop.demo.business.service;
 
 import com.wineshop.demo.web.dto.CategoryDTO;
+import com.wineshop.demo.web.dto.MessageResponse;
+import com.wineshop.demo.web.dto.response.CategoryResponse;
 
 import java.util.List;
 
 public interface CategoryService {
-    String save(CategoryDTO categoryDTO);
-    String update(CategoryDTO categoryDTO);
-    String delete(Long id);
-    List<CategoryDTO> getAll();
+    CategoryResponse save(CategoryDTO categoryDTO);
+    CategoryResponse update(Long id,CategoryDTO categoryDTO);
+    MessageResponse delete(Long id);
+    List<CategoryResponse> getAll();
 }

@@ -1,10 +1,13 @@
 package com.wineshop.demo.business.service.impl;
 
-import com.wineshop.demo.business.exception.messages.ExceptionMessages;
+import com.wineshop.demo.business.exception.CategoryAlreadyExistsException;
+import com.wineshop.demo.business.exception.CategoryNotFoundException;
 import com.wineshop.demo.business.service.CategoryService;
 import com.wineshop.demo.domain.entity.Category;
 import com.wineshop.demo.domain.repository.CategoryRepository;
 import com.wineshop.demo.web.dto.CategoryDTO;
+import com.wineshop.demo.web.dto.MessageResponse;
+import com.wineshop.demo.web.dto.response.CategoryResponse;
 import com.wineshop.demo.web.mapper.CategoryMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +15,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.wineshop.demo.business.exception.messages.ExceptionMessages.CATEGORY_DELETED_SUCCESFULLY;
 
 @Service
 @RequiredArgsConstructor
@@ -21,45 +26,47 @@ public class CategoryServiceImpl implements CategoryService {
     private  final CategoryMapper categoryMapper;
 
    @Override
-    public String save(CategoryDTO categoryDTO) {
-        Category existingCategory = categoryRepository.findByName(categoryDTO.getName());
+    public CategoryResponse save(CategoryDTO categoryDTO) {
+        Category existingCategory = categoryRepository.findByName( categoryDTO.getName());
         if(existingCategory!=null){
-            return ExceptionMessages.CATEGORY_ALREADY_EXIST;
+            throw new CategoryAlreadyExistsException();
         }
         Category category=categoryMapper.toEntity(categoryDTO);
         Category savedCategory=categoryRepository.save(category);
-        return "Category added successfully with ID: " + savedCategory.getId();
+        return categoryMapper.toResponse(savedCategory);
     }
-    public String update(CategoryDTO categoryDTO) {
-         Category existingCategory = categoryRepository.findByName(categoryDTO.getName());
+    public CategoryResponse update(Long id,CategoryDTO categoryDTO) {
+         Category existingCategory = categoryRepository.findById(id);
          if(existingCategory == null){
-             return ExceptionMessages.CATEGORY_NOT_FOUND;
+             throw new CategoryNotFoundException();
          }
-         existingCategory.setName(categoryDTO.getName());
-         existingCategory.setDescription(categoryDTO.getDescription());
-         if(categoryDTO.getId()!=null){
-             if(existingCategory.getName().equals(categoryDTO.getName())){
-                 return ExceptionMessages.CATEGORY_ALREADY_EXIST;
-             }
-            existingCategory.setId(categoryDTO.getId());
-         }
-         return "Category updated successfully with ID: " + existingCategory.getId();
+         Category categoryWithSameName = categoryRepository.findByName(categoryDTO.getName());
+
+        if (categoryWithSameName != null && !categoryWithSameName.getId().equals(id)) {
+            throw new CategoryAlreadyExistsException();
+        }
+        existingCategory.setName(categoryDTO.getName());
+        existingCategory.setDescription(categoryDTO.getDescription());
+        Category updatedCategory = categoryRepository.save(existingCategory);
+
+        return categoryMapper.toResponse(updatedCategory);
     }
-    public String delete(Long id) {
+    public MessageResponse delete(Long id) {
        Category category = categoryRepository.getCategory(id);
        if(category == null){
-           return ExceptionMessages.CATEGORY_NOT_FOUND;
+           throw  new CategoryNotFoundException();
        }
-       if(category.getId()!= null){
            categoryRepository.delete(category);
-       }
-       return "Category deleted successfully with ID: " + category.getId();
+
+       MessageResponse messageResponse = new MessageResponse();
+       messageResponse.setMessage(CATEGORY_DELETED_SUCCESFULLY);
+       return messageResponse;
     }
     @Override
-    public List<CategoryDTO> getAll() {
+    public List<CategoryResponse> getAll() {
         return categoryRepository.getAll()
                 .stream()
-                .map(category -> categoryMapper.toDTO(category))
+                .map(categoryMapper::toResponse)
                 .collect(Collectors.toList());
     }
 

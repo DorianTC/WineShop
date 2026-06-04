@@ -2,10 +2,10 @@ package com.wineshop.demo.business.service.impl;
 
 import com.wineshop.demo.business.exception.UnauthorizedException;
 import com.wineshop.demo.business.exception.UserAlreadyExistsException;
-import com.wineshop.demo.business.exception.messages.ExceptionMessages;
 import com.wineshop.demo.business.service.UserService;
 import com.wineshop.demo.domain.entity.User;
 import com.wineshop.demo.domain.repository.UserRepository;
+import com.wineshop.demo.web.dto.MessageResponse;
 import com.wineshop.demo.web.dto.UserDTO;
 import com.wineshop.demo.web.dto.request.RegisterUserRequest;
 import com.wineshop.demo.web.dto.response.UserResponse;
@@ -16,7 +16,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import static com.wineshop.demo.business.exception.messages.ExceptionMessages.USER_NOT_FOUND;
+import static com.wineshop.demo.business.exception.messages.ExceptionMessages.*;
 
 @Service
 @RequiredArgsConstructor
@@ -56,21 +56,20 @@ public class UserServiceImpl implements UserService {
 
     }
 
-    public String delete(Long id) {
+    public MessageResponse delete(Long id) {
         User user = userRepository.findById(id);
         if (user == null) {
-            return ExceptionMessages.USER_NOT_FOUND;
+            throw new UsernameNotFoundException(USER_NOT_FOUND);
         }
-        if (user != null) {
-            userRepository.delete(user);
-        }
-        return "User deleted successfully with ID: " + id;
+        userRepository.delete(user);
+        MessageResponse messageResponse = new MessageResponse(USER_DELETED_SUCCESSFULLY);
+        return messageResponse;
     }
 
-    public String update(UserDTO userDTO) {
+    public UserResponse update(UserDTO userDTO) {
         User existingUser = userRepository.findByEmail(userDTO.getEmail());
         if (existingUser == null) {
-            return "User not found";
+            throw new UsernameNotFoundException(USER_NOT_FOUND);
         }
         existingUser.setFirstName(userDTO.getFirstName());
         existingUser.setLastName(userDTO.getLastName());
@@ -78,12 +77,12 @@ public class UserServiceImpl implements UserService {
         existingUser.setEmail(userDTO.getEmail());
         if (userDTO.getId()!=null) {
             if (userDTO.getEmail() == null) {
-                return ExceptionMessages.EMAIL_ADDRESS_NOT_FOUND;
+                throw new RuntimeException(EMAIL_ADDRESS_NOT_FOUND);
             }
             existingUser.setEmail(userDTO.getEmail());
         }
         userRepository.update(existingUser);
-        return "User updated successfully";
+        return   userMapper.toResponse(existingUser);
     }
 
 

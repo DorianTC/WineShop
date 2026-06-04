@@ -1,13 +1,22 @@
 package com.wineshop.demo.web.controller;
 
+import com.wineshop.demo.business.exception.CategoryNotFoundException;
+import com.wineshop.demo.business.exception.ProductAlreadyExistsException;
+import com.wineshop.demo.business.exception.ProductNotFoundException;
+import com.wineshop.demo.business.exception.UserAlreadyExistsException;
+import com.wineshop.demo.business.exception.messages.ExceptionMessages;
 import com.wineshop.demo.business.service.ProductService;
+import com.wineshop.demo.web.dto.MessageResponse;
 import com.wineshop.demo.web.dto.ProductDTO;
+import com.wineshop.demo.web.dto.response.ProductResponse;
+import com.wineshop.demo.web.dto.response.UserResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/products")
@@ -17,36 +26,21 @@ public class ProductController {
     private final ProductService productService;
 
     @PostMapping
-    public ResponseEntity<String> create(@RequestBody ProductDTO dto) {
-        String message = productService.save(dto);
-        if (message == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Product creation failed," +
-                    " product already exists!");
-        }
-        return ResponseEntity.status(HttpStatus.CREATED).body(message);
+    public ResponseEntity<ProductResponse> create(@RequestBody ProductDTO dto) {
+            ProductResponse response = productService.save(dto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
     @DeleteMapping("/delete/{id}")  // ← endpoint DELETE
-    public ResponseEntity<String> delete(@PathVariable Long id) {
-        String message = productService.delete(id);
-
-        if (message.equals("Product cannot be found")) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
-        }
-
-        return ResponseEntity.ok(message);
+    public ResponseEntity<MessageResponse> delete(@PathVariable Long id) {
+        return   ResponseEntity.status(HttpStatus.OK).body(productService.delete(id));
     }
     @PatchMapping("/{id}")
-    public ResponseEntity<String> update(
+    public ResponseEntity<ProductResponse> update(
             @PathVariable Long id,
             @RequestBody ProductDTO dto) {
 
-        String message = productService.update(id, dto);
-
-        if (message.equals("Product not found") || message.equals("Category not found")) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
-        }
-
-        return ResponseEntity.ok(message);
+        ProductResponse productResponse = productService.update(id, dto);
+        return ResponseEntity.status(HttpStatus.OK).body(productResponse);
     }
 
     @GetMapping

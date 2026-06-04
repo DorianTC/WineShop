@@ -58,4 +58,9 @@ public class CategoryRepositoryImpl implements CategoryRepository {
                 .getResultList();
     }
 
+    @Override
+    public Category findById(Long id) {
+        return entityManager.find(Category.class, id);
+    }
+
 }

@@ -1,11 +1,14 @@
 package com.wineshop.demo.web.controller;
-import com.wineshop.demo.business.exception.messages.ExceptionMessages;
 import com.wineshop.demo.business.service.UserService;
+import com.wineshop.demo.web.dto.MessageResponse;
 import com.wineshop.demo.web.dto.UserDTO;
+import com.wineshop.demo.web.dto.response.UserResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
 
 @RestController
 @RequestMapping("/api/users")
@@ -16,26 +19,14 @@ public class UserController {
     private final UserService userService;
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
-        String message = userService.delete(id);
-
-        if (message.equals(ExceptionMessages.USER_NOT_FOUND)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
-        }
-
-        return ResponseEntity.ok(message);
+    public ResponseEntity<MessageResponse> delete(@PathVariable Long id) {
+        return ResponseEntity.status(HttpStatus.OK).body(userService.delete(id));
     }
 
     @PatchMapping("/update")
-    public ResponseEntity<String> update(
+    public ResponseEntity<UserResponse> update(
             @RequestBody UserDTO dto) {
-
-        String message = userService.update(dto);
-
-        if (message.equals(ExceptionMessages.EMAIL_ADDRESS_NOT_FOUND)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
-        }
-
-        return ResponseEntity.ok(message);
+        UserResponse userResponse = userService.update(dto);
+        return ResponseEntity.status(HttpStatus.OK).body(userResponse);
     }
 }
